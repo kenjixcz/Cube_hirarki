@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Parent - Sphere Child Hierarchy</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #1a1a1a; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 1. Setup Scene, Camera, dan Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            75, // FOV
+            window.innerWidth / window.innerHeight, // Aspect Ratio
+            0.1,  // Near plane
+            1000  // Far plane
+        );
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); // antialias opsional, untuk pinggiran lebih halus
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Buat Material (flat, tanpa pencahayaan)
+        const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x0077ff }); // Biru untuk kubus
+        const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00 }); // Oranye untuk bola
+
+        // 3. Buat Geometri dan Mesh untuk Kubus (Parent)
+        const cubeGeometry = new THREE.BoxGeometry(2, 2, 2); // Ukuran kubus sedikit lebih besar
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        scene.add(cube); // Tambahkan kubus (parent) ke scene
+
+        // 4. Buat Geometri dan Mesh untuk Bola (Child)
+        const sphereGeometry = new THREE.SphereGeometry(0.75, 32, 16); // Radius, widthSegments, heightSegments
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+        // 5. Atur Posisi Bola RELATIF terhadap Kubus
+        // Posisi ini adalah offset dari pusat kubus
+        sphere.position.x = 2.5; // Geser bola ke kanan dari pusat kubus
+        sphere.position.y = 0.5; // Sedikit ke atas dari pusat kubus
+
+        // 6. Jadikan Bola sebagai anak dari Kubus
+        cube.add(sphere);
+        // Sekarang, jika kubus bergerak atau berotasi, bola akan ikut bergerak/berotasi
+        // karena transformasinya (posisi, rotasi, skala) akan relatif terhadap kubus.
+
+        // 7. Atur Posisi Kamera
+        camera.position.z = 7; // Mundurkan kamera agar objek terlihat
+        camera.position.y = 1;
+        camera.lookAt(scene.position); // Kamera melihat ke pusat scene
+
+        // Variabel untuk rotasi
+        let angle = 0;
+
+        // 8. Buat Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotasi Kubus (Parent)
+            // Ini akan membuat bola (child) ikut berputar mengelilingi sumbu rotasi kubus
+            cube.rotation.x += 0.005;
+            cube.rotation.y += 0.01;
+
+            // Rotasi Bola (Child) pada sumbunya sendiri (opsional)
+            // Ini adalah rotasi lokal bola, relatif terhadap orientasinya sendiri
+            sphere.rotation.z += 0.02;
+
+            // Contoh lain: Membuat bola "mengorbit" di sekitar sumbu Y lokal kubus
+            // dengan mengubah posisi relatifnya secara dinamis (jika diinginkan)
+            // angle += 0.02;
+            // sphere.position.x = 1.5 * Math.cos(angle);
+            // sphere.position.z = 1.5 * Math.sin(angle); // Mengorbit pada bidang XZ relatif kubus
+
+            renderer.render(scene, camera);
+        }
+
+        // 9. Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Mulai animasi
+        animate();
+    </script>
+</body>
+</html>
